@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jul 11 09:18:17 2017
+
+@author: Daniel
+"""
+
+from Bitfinex.Client import Endpoints
+import time
+import timeit
+import matplotlib.pyplot as plt
+plt.interactive(True)
+import numpy as np
+
+
+A = Endpoints()
+
+
+Ask =[]
+Bid =[]
+Time=[]
+
+MiddleBand =[]
+UpperBand = []
+LowerBand =[]
+count =0
+Profit =[]
+BuyTrade =0
+SellTrade =0
+SideHistory=[]
+
+Run=1
+while Run==1:
+    
+    start = timeit.default_timer()
+    B = A.Ticker("BTCUSD")
+    
+    timestamp = time.time()
+    
+    
+    
+    Time = np.append(Time, timestamp)
+    Ask = np.append(Ask,float(B['ask']))
+    Bid = np.append(Bid,float(B['bid']))
+    
+    # Bollinger band 20*60 sec
+    BBPeriod =20*60
+
+    if Time[-1] - Time[0] > BBPeriod:
+        
+        X = (np.mean(Ask) +np.mean(Bid)  )/2    # Mean price
+        X_STD = np.std( (Ask +Bid)/2)           #  Standard deviation of mean price
+
+        MiddleBand = np.append(MiddleBand, X  )
+        UpperBand = np.append(UpperBand ,   X + 2*X_STD  )
+        LowerBand = np.append(LowerBand ,   X - 2*X_STD  )
+    
+        Ask = np.delete(Ask,0)
+        Bid = np.delete(Bid,0)
+        Time = np.delete(Time,0)
+        
+        if len(MiddleBand) > len(Ask):
+            MiddleBand = np.delete(MiddleBand,0)
+            UpperBand = np.delete(UpperBand,0)
+            LowerBand = np.delete(LowerBand,0)
+        
+            fig=plt.figure()
+            plt.plot(Time,Ask,'--k')
+            plt.hold
+            plt.plot(Time,Bid,'--k')
+            plt.hold
+            plt.plot(Time,MiddleBand,'r')
+            plt.hold
+            plt.plot(Time,UpperBand,'b')
+            plt.hold
+            plt.plot(Time,LowerBand,'b')
+            plt.show()
+
+
+
+            # This is a back testing only
+            # No actual trades are executed, just checked if with the real price profit would be 
+            # generated
+            
+            if Bid[-2] > UpperBand[-2] and Bid[-1] < UpperBand[-1] and BuyTrade==0 and SellTrade ==0:
+                
+               Sell = Bid[-1]
+               SellTime = Time[-1]
+               SellTrade =1
+               print("SellTrade open: " + str(Sell))
+               
+            if SellTrade ==1:
+                
+                if Sell - Ask[-1] > 5.1:
+                    
+                    Profit = np.append(Profit, Sell - Ask[-1])
+                    SideHistory = np.append(SideHistory,"Sell")
+                    SellTrade =0
+                    print("SellTrade closed:" + str(Ask[-1]) + ", Profit:" + str(Profit[-1]))
+
+                elif Time[-1] - SellTime > BBPeriod:
+                    
+                    Profit = np.append(Profit, Sell - Ask[-1])
+                    SideHistory = np.append(SideHistory,"Sell")
+                    SellTrade =0
+                    print("SellTrade closed:" + str(Ask[-1]) + ", Profit:" + str(Profit[-1]))
+                    
+                    
+            if Ask[-2] < LowerBand[-2] and Ask[-1] > LowerBand[-1] and SellTrade==0 and BuyTrade==0:
+                
+               Buy = Ask[-1]
+               BuyTime = Time[-1]
+               BuyTrade =1
+               print("BuyTrade open: " + str(Buy))
+               
+            if BuyTrade ==1:
+                
+                if Bid[-1] - Buy > 5.1:
+                    
+                    Profit = np.append(Profit, Bid[-1] - Buy )
+                    SideHistory = np.append(SideHistory,"Buy")
+                    BuyTrade =0
+                    print("BuyTrade closed:" + str(Bid[-1]) + ", Profit:" + str(Profit[-1]))
+                
+                if Time[-1] - BuyTime > BBPeriod:
+                    
+                    Profit = np.append(Profit, Bid[-1] - Buy )
+                    SideHistory = np.append(SideHistory,"Buy")
+                    BuyTrade =0
+                    print("BuyTrade closed:" + str(Bid[-1]) + ", Profit:" + str(Profit[-1]))
+    
+    stop = timeit.default_timer()
+    latency = stop - start
+    print("latency:", latency, "sec", ", time:",timestamp, ", Number of trades:",len(Profit))
+    time.sleep(5-latency)
+                    
+                    
+                
+                    
+                    
+            
+                
+        
+        
+    
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
