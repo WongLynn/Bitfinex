@@ -22,7 +22,7 @@ class Endpoints:
 
     def __init__(self):
         self.URL = 'https://api.bitfinex.com/v1'
-        self.KEY = 'YOUR API KEY
+        self.KEY = 'YOUR API KEY'
         self.SECRET = b'YOUR SECRET KEY' 
         pass
     
