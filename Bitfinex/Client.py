@@ -152,7 +152,7 @@ class Endpoints:
         
         # Write automatically a csv file with the balance history !
         BalanceHistoryJSON = r.json()
-        f = csv.writer( open("/Users/Daniel/Documents/BaerTech/BitTrade/Balances/BalanceHistory_" + Currency + ".csv", "w",newline=''))
+        f = csv.writer( open("FOLDER ADDRESS/BalanceHistory_" + Currency + ".csv", "w",newline=''))
         f.writerow( [ 'amount','balance','currency','description','timestamp'])
         for i in range(len(BalanceHistoryJSON)):
             f.writerow([BalanceHistoryJSON[i]['amount'],
